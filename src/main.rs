@@ -49,8 +49,9 @@ impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.starts_with("!bonk") {
             let s = &msg.content[6..msg.content.len()];
-            println!("{}",s);
-            msg.reply(&ctx, format!("Bonk! {} go to horny jail", s))
+            info!("Sending bonk message with content '{}'", s);
+            msg.channel_id
+                .say(&ctx, format!("Bonk! {} go to horny jail.", s))
                 .await
                 .expect("Failed to send message");
         }
