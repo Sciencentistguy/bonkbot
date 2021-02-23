@@ -54,12 +54,12 @@ impl EventHandler for Handler {
                     .expect("Failed to send message");
                 return;
             }
-            let s = &msg.content[6..msg.content.len()];
-            info!("Sending bonk message with content '{}'", s);
+            let bonk_text = &msg.content[6..msg.content.len()];
+            info!("Sending bonk message with content '{}'", bonk_text);
             msg.channel_id
                 .say(
                     &ctx,
-                    format!("Bonk! {} go to horny jail. <:BonkaS:811597040302948382>", s),
+                    format!("Bonk! {} go to horny jail. <:BonkaS:811597040302948382>", bonk_text),
                 )
                 .await
                 .expect("Failed to send message");
