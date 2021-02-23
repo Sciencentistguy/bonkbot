@@ -1,12 +1,24 @@
 use log::*;
 use std::env;
 
+use rand::seq::SliceRandom;
+
 use serenity::{
     async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
 };
+
 use structopt::StructOpt;
+
+static BONK_EMOJIS: [&'static str; 6] = [
+    "<:BonkaS:811597040302948382>",
+    "<a:breadCatBonk:813777048610144266>",
+    "<a:peepoBonk1:813777114243137536>",
+    "<a:peepoBonk2:813777094303154216>",
+    "<:dogeBonk:813777123465887775>",
+    "<:weebBonk:813777081090965524>",
+];
 
 struct Handler;
 
@@ -55,11 +67,18 @@ impl EventHandler for Handler {
                 return;
             }
             let bonk_text = &msg.content[6..msg.content.len()];
-            info!("Sending bonk message with content '{}'", bonk_text);
+            let bonk_emoji = {
+                let mut rng = rand::rngs::OsRng::default();
+                *BONK_EMOJIS.choose(&mut rng).unwrap()
+            };
+            info!(
+                "Sending bonk message with content '{}' and emoji '{}'",
+                bonk_text, bonk_emoji
+            );
             msg.channel_id
                 .say(
                     &ctx,
-                    format!("Bonk! {} go to horny jail. <:BonkaS:811597040302948382>", bonk_text),
+                    format!("Bonk! {} go to horny jail. {}", bonk_text, bonk_emoji),
                 )
                 .await
                 .expect("Failed to send message");
