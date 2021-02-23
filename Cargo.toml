@@ -1,6 +1,6 @@
 [package]
 name = "bonkbot"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Jamie Quigley <jamie@quigley.xyz>"]
 edition = "2018"
 
