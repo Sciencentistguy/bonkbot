@@ -48,10 +48,19 @@ async fn main() {
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.starts_with("!bonk") {
+            if msg.content == "!bonk" {
+                msg.reply(&ctx, "Usage: `!bonk <text>`")
+                    .await
+                    .expect("Failed to send message");
+                return;
+            }
             let s = &msg.content[6..msg.content.len()];
             info!("Sending bonk message with content '{}'", s);
             msg.channel_id
-                .say(&ctx, format!("Bonk! {} go to horny jail.", s))
+                .say(
+                    &ctx,
+                    format!("Bonk! {} go to horny jail. <:BonkaS:811597040302948382>", s),
+                )
                 .await
                 .expect("Failed to send message");
         }
