@@ -3,15 +3,14 @@ use std::env;
 
 use rand::seq::SliceRandom;
 
-use serenity::{
-    async_trait,
-    model::{channel::Message, gateway::Ready},
-    prelude::*,
-};
+use serenity::async_trait;
+use serenity::model::channel::Message;
+use serenity::model::gateway::Ready;
+use serenity::prelude::*;
 
 use structopt::StructOpt;
 
-static BONK_EMOJIS: [&'static str; 6] = [
+const BONK_EMOJIS: [&str; 6] = [
     "<:BonkaS:811597040302948382>",
     "<a:breadCatBonk:813777048610144266>",
     "<a:peepoBonk1:813777114243137536>",
@@ -19,6 +18,8 @@ static BONK_EMOJIS: [&'static str; 6] = [
     "<:dogeBonk:813777123465887775>",
     "<:weebBonk:813777081090965524>",
 ];
+
+const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
 
 struct Handler;
 
@@ -64,6 +65,16 @@ impl EventHandler for Handler {
                 msg.reply(&ctx, "Usage: `!bonk <text>`")
                     .await
                     .expect("Failed to send message");
+                return;
+            }
+            if msg.content.len() > DISCORD_MESSAGE_MAX_LENGTH {
+                error!("Message too long");
+                msg.reply(
+                    &ctx,
+                    "Error: bonk message would be too long. Stop trying to break my bot 😠",
+                )
+                .await
+                .expect("failed to reply to message");
                 return;
             }
             let bonk_text = &msg.content[6..msg.content.len()];
