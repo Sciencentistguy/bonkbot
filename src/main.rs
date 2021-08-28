@@ -1,14 +1,18 @@
 use log::*;
-use std::env;
-
-use rand::seq::SliceRandom;
+use std::path::PathBuf;
 
 use serenity::async_trait;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
+use serenity::model::interactions::application_command::ApplicationCommand;
+use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
+use serenity::model::interactions::application_command::ApplicationCommandOptionType;
+use serenity::model::interactions::Interaction;
+use serenity::model::interactions::InteractionResponseType;
 use serenity::prelude::*;
 
 use once_cell::sync::Lazy;
+use rand::seq::SliceRandom;
 use structopt::StructOpt;
 
 static BONK_EMOJIS: Lazy<Vec<&'static str>> =
@@ -24,22 +28,25 @@ async fn main() {
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "bonkbot=info");
     }
+
     pretty_env_logger::init();
+
     let opts = Opt::from_args();
-    let token = if opts.token.is_some() {
-        opts.token.unwrap()
-    } else if opts.token_filename.is_some() {
-        std::fs::read_to_string(opts.token_filename.unwrap()).expect("File does not exist")
-    } else {
-        env::var("DISCORD_TOKEN")
-            .expect("Expected either --token, --token-filename, or a token in the environment")
-    };
+
+    let token = std::fs::read_to_string(opts.token_filename).expect("File does not exist");
+
+    let appid = std::fs::read_to_string(opts.application_id_filename)
+        .expect("File does not exist")
+        .trim()
+        .parse::<u64>()
+        .unwrap();
 
     // Create a new instance of the Client, logging in as a bot. This will
     // automatically prepend your bot token with "Bot ", which is a requirement
     // by Discord for bot users.
     let mut client = Client::builder(&token)
         .event_handler(Handler)
+        .application_id(appid)
         .await
         .expect("Err creating client");
 
@@ -54,6 +61,41 @@ async fn main() {
 
 #[async_trait]
 impl EventHandler for Handler {
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(command) = interaction {
+            let content = match command.data.name.as_str() {
+                "bonk" => {
+                    let user = match command
+                        .data
+                        .options
+                        .get(0)
+                        .and_then(|o| o.resolved.as_ref())
+                    {
+                        Some(ApplicationCommandInteractionDataOptionValue::User(user, _)) => user,
+                        _ => panic!("Expected a user argument"),
+                    };
+
+                    let bonk_emoji = {
+                        let mut rng = rand::rngs::OsRng::default();
+                        *BONK_EMOJIS.choose(&mut rng).unwrap()
+                    };
+
+                    format!("Bonk! {} go to horny jail. {}", user.mention(), bonk_emoji)
+                }
+                _ => "Error: invalid command name".to_owned(),
+            };
+
+            command
+                .create_interaction_response(&ctx, |response| {
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|msg| msg.content(content))
+                })
+                .await
+                .expect("Failed to respond to slash command");
+        }
+    }
+
     async fn message(&self, ctx: Context, msg: Message) {
         if msg.content.starts_with("!bonk") {
             if msg.content == "!bonk" {
@@ -91,27 +133,46 @@ impl EventHandler for Handler {
         }
     }
 
-    // Set a handler to be called on the `ready` event. This is called when a
-    // shard is booted, and a READY payload is sent by Discord. This payload
-    // contains data like the current user's guild Ids, current user data,
-    // private channels, and more.
-    //
-    // In this case, just print what the current user's username is.
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
+
+        let commands = ApplicationCommand::set_global_application_commands(&ctx, |builder| {
+            builder.create_application_command(|command_builder| {
+                command_builder
+                    .name("bonk")
+                    .description("Send someone to horny jail")
+                    .create_option(|option_builder| {
+                        option_builder
+                            .name("user")
+                            .description("The user to bonk")
+                            .kind(ApplicationCommandOptionType::User)
+                            .required(true)
+                    })
+            })
+        })
+        .await
+        .expect("Command builder failed");
+
+        info!(
+            "Registered the following slash commands: {:?}",
+            commands
+                .iter()
+                .map(|cmd| cmd.name.as_str())
+                .collect::<Vec<_>>()
+        );
     }
 }
 
 #[derive(StructOpt, Debug)]
 #[structopt(
     name = "bonkbot",
-    about = "A small silly bot to \"bonk\" people in discord"
+    about = r#"A small silly bot to "bonk" people in discord"#
 )]
 struct Opt {
-    /// Provide the token
-    #[structopt(short, long)]
-    token: Option<String>,
-    /// Provide the name of a file containing the token
-    #[structopt(short = "f", long)]
-    token_filename: Option<String>,
+    /// File containing the bot token
+    #[structopt()]
+    token_filename: PathBuf,
+    /// File containing the application id
+    #[structopt()]
+    application_id_filename: PathBuf,
 }
