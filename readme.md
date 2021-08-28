@@ -6,16 +6,16 @@ A small silly bot to "bonk" people in discord.
 
 ## Usage
 
-This bot pulls from a list of custom emoji defined at the top of `main.rs`. Change these to refer to emoji that your instance of the bot will know about (i.e. ones from the server you intend to use it on)
-
+- Add custom bonk emojis to `src/bonk_emojis.txt`. The strings present in that file by default will not work, unless your instance of the bot is in my testing server (it isn't).
 - [Create](https://discordpy.readthedocs.io/en/latest/discord.html#creating-a-bot-account) a discord application and bot.
-- [Invite](https://discordpy.readthedocs.io/en/latest/discord.html#inviting-your-bot) the bot to your server.
-- Run the bot with `cargo run`. To provide the token, you have 3 options:
-  - Provide the token directly with `--token <token>`
-  - Provide the name of a file containing the token with `--token-filename <filename>`
-  - Set the environment variable `DISCORD_TOKEN` to the token before running.
-- Send the message `!bonk <content>`
-- Enjoy the silly fun
+- [Invite](https://discordpy.readthedocs.io/en/latest/discord.html#inviting-your-bot) the bot to your server. Make sure to select the `applications.commands` scope if you want to use slash commands.
+- Create two files, containing the bot token and application id
+- Run the bot, providing the token and application id as command line arguments:
+  - Either with cargo:
+    - `cargo run -- <token_filename> <application_id_filename>`
+  - Or standalone:
+    - `bonkbot <token_filename> <application_id_filename>`
+- Use the command `/bonk <user>`, or send a message of the form `!bonk <message>`.
 
 ---
 
