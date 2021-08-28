@@ -21,4 +21,4 @@ This bot pulls from a list of custom emoji defined at the top of `main.rs`. Chan
 
 Based on [Serenity](https://github.com/serenity-rs/serenity).
 
-Available under the terms of the GNU AGPL.
+Available under the terms of the Mozilla Public Licence, version 2.0
