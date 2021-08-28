@@ -8,16 +8,11 @@ use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
 use serenity::prelude::*;
 
+use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
-const BONK_EMOJIS: [&str; 6] = [
-    "<:BonkaS:811597040302948382>",
-    "<a:breadCatBonk:813777048610144266>",
-    "<a:peepoBonk1:813777114243137536>",
-    "<a:peepoBonk2:813777094303154216>",
-    "<:dogeBonk:813777123465887775>",
-    "<:weebBonk:813777081090965524>",
-];
+static BONK_EMOJIS: Lazy<Vec<&'static str>> =
+    Lazy::new(|| include_str!("bonk_emojis.txt").lines().collect());
 
 const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
 
