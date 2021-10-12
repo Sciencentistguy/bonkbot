@@ -19,6 +19,6 @@ A small silly bot to "bonk" people in discord.
 
 ---
 
-Based on [Serenity](https://github.com/serenity-rs/serenity).
+Written using [Serenity](https://github.com/serenity-rs/serenity).
 
 Available under the terms of the Mozilla Public Licence, version 2.0

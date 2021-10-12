@@ -80,6 +80,8 @@ impl EventHandler for Handler {
                         *BONK_EMOJIS.choose(&mut rng).unwrap()
                     };
 
+                    info!("Bonking user {}, with emoji {}", user.id, bonk_emoji);
+
                     format!("Bonk! {} go to horny jail. {}", user.mention(), bonk_emoji)
                 }
                 _ => "Error: invalid command name".to_owned(),
