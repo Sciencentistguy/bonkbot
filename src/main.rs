@@ -1,5 +1,5 @@
-use log::*;
 use std::path::PathBuf;
+use tracing::*;
 
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -25,11 +25,10 @@ struct Handler;
 #[tokio::main]
 async fn main() {
     // Set default log level to info unless otherwise specified.
-    if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "bonkbot=info");
-    }
-
-    pretty_env_logger::init();
+    tracing_subscriber::FmtSubscriber::builder()
+        .pretty()
+        .with_max_level(tracing::Level::INFO)
+        .init();
 
     let opts = Opt::from_args();
 
@@ -55,7 +54,7 @@ async fn main() {
     // Shards will automatically attempt to reconnect, and will perform
     // exponential backoff until it reconnects.
     if let Err(why) = client.start().await {
-        error!("Client error: {:?}", why);
+        error!(error = ?why, "Client error");
     }
 }
 
@@ -72,7 +71,10 @@ impl EventHandler for Handler {
                         .and_then(|o| o.resolved.as_ref())
                     {
                         Some(ApplicationCommandInteractionDataOptionValue::User(user, _)) => user,
-                        _ => panic!("Expected a user argument"),
+                        _ => {
+                            error!("No user argument passed to `bonk`");
+                            unreachable!("Expected a user argument");
+                        }
                     };
 
                     let bonk_emoji = {
@@ -80,7 +82,7 @@ impl EventHandler for Handler {
                         *BONK_EMOJIS.choose(&mut rng).unwrap()
                     };
 
-                    info!("Bonking user {}, with emoji {}", user.id, bonk_emoji);
+                    info!(user = %user.id, "Sending bonk from slash command");
 
                     format!("Bonk! {} go to horny jail. {}", user.mention(), bonk_emoji)
                 }
@@ -107,7 +109,7 @@ impl EventHandler for Handler {
                 return;
             }
             if msg.content.len() > DISCORD_MESSAGE_MAX_LENGTH {
-                error!("Message too long");
+                error!(length = %msg.content.len(), "Message too long");
                 msg.reply(
                     &ctx,
                     "Error: bonk message would be too long. Stop trying to break my bot 😠",
@@ -121,10 +123,9 @@ impl EventHandler for Handler {
                 let mut rng = rand::rngs::OsRng::default();
                 *BONK_EMOJIS.choose(&mut rng).unwrap()
             };
-            info!(
-                "Sending bonk message with content '{}' and emoji '{}'",
-                bonk_text, bonk_emoji
-            );
+
+            info!(text = %bonk_text, "Sending bonk from `!` command");
+
             msg.channel_id
                 .say(
                     &ctx,
