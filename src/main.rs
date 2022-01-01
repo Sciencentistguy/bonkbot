@@ -1,5 +1,6 @@
+mod emojis;
+
 use std::path::PathBuf;
-use tracing::*;
 
 use serenity::async_trait;
 use serenity::model::channel::Message;
@@ -11,12 +12,10 @@ use serenity::model::interactions::Interaction;
 use serenity::model::interactions::InteractionResponseType;
 use serenity::prelude::*;
 
-use once_cell::sync::Lazy;
+use clap::Parser;
+use emojis::EMOJIS;
 use rand::seq::SliceRandom;
-use structopt::StructOpt;
-
-static BONK_EMOJIS: Lazy<Vec<&'static str>> =
-    Lazy::new(|| include_str!("bonk_emojis.txt").lines().collect());
+use tracing::*;
 
 const DISCORD_MESSAGE_MAX_LENGTH: usize = 2000;
 
@@ -30,7 +29,7 @@ async fn main() {
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let opts = Opt::from_args();
+    let opts = Opt::parse();
 
     let token = std::fs::read_to_string(opts.token_filename).expect("File does not exist");
 
@@ -77,9 +76,9 @@ impl EventHandler for Handler {
                         }
                     };
 
-                    let bonk_emoji = {
+                    let &bonk_emoji = {
                         let mut rng = rand::rngs::OsRng::default();
-                        *BONK_EMOJIS.choose(&mut rng).unwrap()
+                        EMOJIS.choose(&mut rng).unwrap()
                     };
 
                     info!(user = %user.id, "Sending bonk from slash command");
@@ -119,9 +118,9 @@ impl EventHandler for Handler {
                 return;
             }
             let bonk_text = &msg.content[6..msg.content.len()];
-            let bonk_emoji = {
+            let &bonk_emoji = {
                 let mut rng = rand::rngs::OsRng::default();
-                *BONK_EMOJIS.choose(&mut rng).unwrap()
+                EMOJIS.choose(&mut rng).unwrap()
             };
 
             info!(text = %bonk_text, "Sending bonk from `!` command");
@@ -166,16 +165,16 @@ impl EventHandler for Handler {
     }
 }
 
-#[derive(StructOpt, Debug)]
-#[structopt(
+#[derive(Parser, Debug)]
+#[clap(
     name = "bonkbot",
+    version,
+    author,
     about = r#"A small silly bot to "bonk" people in discord"#
 )]
 struct Opt {
     /// File containing the bot token
-    #[structopt()]
     token_filename: PathBuf,
     /// File containing the application id
-    #[structopt()]
     application_id_filename: PathBuf,
 }
