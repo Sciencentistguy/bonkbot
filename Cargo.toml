@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 chrono = "0.4.19"
 rand = "0.8.5"
-reqwest = "0.11.9"
+reqwest = "0.11.10"
 tokio = {version = "1.16", features = ["macros", "rt-multi-thread"]}
 clap = { version = "3.1.12", features = ["derive"] }
 tracing = "0.1.30"
