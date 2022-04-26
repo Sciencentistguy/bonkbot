@@ -39,10 +39,14 @@ async fn main() {
         .parse::<u64>()
         .unwrap();
 
+    let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
+
+    assert!(intents.message_content());
+
     // Create a new instance of the Client, logging in as a bot. This will
     // automatically prepend your bot token with "Bot ", which is a requirement
     // by Discord for bot users.
-    let mut client = Client::builder(&token)
+    let mut client = Client::builder(&token, intents)
         .event_handler(Handler)
         .application_id(appid)
         .await

@@ -9,6 +9,7 @@ A small silly bot to "bonk" people in discord.
 - Add custom bonk emojis to `src/bonk_emojis.txt`. The strings present in that file by default will not work, unless your instance of the bot is in my testing server (it isn't).
 - [Create](https://discordpy.readthedocs.io/en/latest/discord.html#creating-a-bot-account) a discord application and bot.
 - [Invite](https://discordpy.readthedocs.io/en/latest/discord.html#inviting-your-bot) the bot to your server. Make sure to select the `applications.commands` scope if you want to use slash commands.
+- Enable the `MESSAGE_CONTENT` privileged intent
 - Create two files, containing the bot token and application id
 - Run the bot, providing the token and application id as command line arguments:
   - Either with cargo:
