@@ -111,6 +111,9 @@ impl EventHandler for Handler {
                     .expect("Failed to send message");
                 return;
             }
+            if !msg.content.starts_with("!bonk "){
+                return;
+            }
             if msg.content.len() > DISCORD_MESSAGE_MAX_LENGTH {
                 error!(length = %msg.content.len(), "Message too long");
                 msg.reply(
@@ -118,7 +121,7 @@ impl EventHandler for Handler {
                     "Error: bonk message would be too long. Stop trying to break my bot 😠",
                 )
                 .await
-                .expect("failed to reply to message");
+                .expect("Failed to reply to message");
                 return;
             }
             let bonk_text = &msg.content[6..msg.content.len()];
@@ -127,7 +130,7 @@ impl EventHandler for Handler {
                 EMOJIS.choose(&mut rng).unwrap()
             };
 
-            info!(text = %bonk_text, "Sending bonk from `!` command");
+            info!(text = %bonk_text, "Sending bonk from text command");
 
             msg.channel_id
                 .say(
