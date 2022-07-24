@@ -25,7 +25,6 @@ struct Handler;
 async fn main() {
     // Set default log level to info unless otherwise specified.
     tracing_subscriber::FmtSubscriber::builder()
-        .pretty()
         .with_max_level(tracing::Level::INFO)
         .init();
 
