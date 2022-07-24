@@ -45,7 +45,9 @@
             };
           };
       in {
-        packages.default = pkgs.callPackage bonkbot {};
+        packages.bonkbot = pkgs.callPackage bonkbot {};
+
+        packages.default = self.packages.${system}.bonkbot;
         devShells.default = self.packages.${system}.default.overrideAttrs (super: {
           nativeBuildInputs = with pkgs;
             super.nativeBuildInputs
