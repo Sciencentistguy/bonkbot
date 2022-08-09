@@ -3,13 +3,13 @@ mod emojis;
 use std::path::PathBuf;
 
 use serenity::async_trait;
+use serenity::model::application::command::Command;
+use serenity::model::application::command::CommandOptionType;
+use serenity::model::application::interaction::application_command::CommandDataOptionValue;
+use serenity::model::application::interaction::Interaction;
+use serenity::model::application::interaction::InteractionResponseType;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
-use serenity::model::interactions::application_command::ApplicationCommand;
-use serenity::model::interactions::application_command::ApplicationCommandInteractionDataOptionValue;
-use serenity::model::interactions::application_command::ApplicationCommandOptionType;
-use serenity::model::interactions::Interaction;
-use serenity::model::interactions::InteractionResponseType;
 use serenity::prelude::*;
 
 use clap::Parser;
@@ -72,7 +72,7 @@ impl EventHandler for Handler {
                         .get(0)
                         .and_then(|o| o.resolved.as_ref())
                     {
-                        Some(ApplicationCommandInteractionDataOptionValue::User(user, _)) => user,
+                        Some(CommandDataOptionValue::User(user, _)) => user,
                         _ => {
                             error!("No user argument passed to `bonk`");
                             unreachable!("Expected a user argument");
@@ -110,7 +110,7 @@ impl EventHandler for Handler {
                     .expect("Failed to send message");
                 return;
             }
-            if !msg.content.starts_with("!bonk "){
+            if !msg.content.starts_with("!bonk ") {
                 return;
             }
             if msg.content.len() > DISCORD_MESSAGE_MAX_LENGTH {
@@ -144,7 +144,7 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
 
-        let commands = ApplicationCommand::set_global_application_commands(&ctx, |builder| {
+        let commands = Command::set_global_application_commands(&ctx, |builder| {
             builder.create_application_command(|command_builder| {
                 command_builder
                     .name("bonk")
@@ -153,7 +153,7 @@ impl EventHandler for Handler {
                         option_builder
                             .name("user")
                             .description("The user to bonk")
-                            .kind(ApplicationCommandOptionType::User)
+                            .kind(CommandOptionType::User)
                             .required(true)
                     })
             })
