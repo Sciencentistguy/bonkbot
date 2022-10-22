@@ -12,6 +12,16 @@ A small silly bot to "bonk" people in discord.
 - Enable the `MESSAGE_CONTENT` privileged intent
 - Create two files, containing the bot token and application id
 - Run the bot, providing the token and application id as command line arguments:
+  - With the included NixOS module:
+  ```nix
+  {pkgs, ...}: {
+    services.bonkbot = {
+        enable = true;
+        tokenFile = "<token_filename>";
+        appIdFile = "<application_id_filename>";
+    };
+  }
+  ```
   - With nix:
     - `nix run 'github:Sciencentistguy/bonkbot' -- <token_filename> <application_id_filename>`
   - With cargo:
