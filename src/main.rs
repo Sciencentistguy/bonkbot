@@ -3,6 +3,7 @@ mod emojis;
 use std::path::PathBuf;
 
 use serenity::async_trait;
+
 use serenity::model::application::command::Command;
 use serenity::model::application::command::CommandOptionType;
 use serenity::model::application::interaction::application_command::CommandDataOptionValue;

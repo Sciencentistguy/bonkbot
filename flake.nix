@@ -1,17 +1,15 @@
 {
   inputs = {
-    # github example, also supported gitlab:
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    flake-compat = {
-      url = github:edolstra/flake-compat;
-      flake = false;
-    };
+    crane.url = "github:ipetkov/crane";
+    crane.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    crane,
     ...
   }:
     {
@@ -22,30 +20,22 @@
     // flake-utils.lib.eachDefaultSystem (
       system: let
         pkgs = nixpkgs.legacyPackages.${system};
+
         inherit (pkgs) lib;
-        bonkbot = {
-          lib,
-          openssl,
-          pkg-config,
-          rustPlatform,
-        }:
-          rustPlatform.buildRustPackage {
-            name = "bonkbot";
-            src = lib.cleanSource ./.;
-            cargoLock.lockFile = ./Cargo.lock;
-            nativeBuildInputs = [
-              pkg-config
-              rustPlatform.bindgenHook
-            ];
-            buildInputs = [openssl];
-            meta = with lib; {
-              license = licenses.mpl20;
-              homepage = "https://github.com/Sciencentistguy/bonkbot";
-              platforms = platforms.all;
-            };
-          };
+
+        craneLib = crane.lib.${system};
+
+        bonkbot = craneLib.buildPackage {
+          name = "bonkbot";
+          src = craneLib.cleanCargoSource ./.;
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            rustPlatform.bindgenHook
+          ];
+          buildInputs = with pkgs; [openssl];
+        };
       in {
-        packages.bonkbot = pkgs.callPackage bonkbot {};
+        packages.bonkbot = bonkbot;
 
         packages.default = self.packages.${system}.bonkbot;
         devShells.default = self.packages.${system}.default.overrideAttrs (super: {
@@ -55,6 +45,7 @@
               cargo-edit
               clippy
               rustfmt
+              rustc
             ];
           RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
         });
